@@ -29,7 +29,7 @@ function App() {
         const csvText = await response.text();
 
         Papa.parse(csvText, {
-          header: true, // 첫 줄을 헤더로 인식
+          header: false, // 헤더가 없는 시트 구조에 맞춤
           skipEmptyLines: true,
           complete: (results) => {
             const rawData = results.data;
@@ -37,11 +37,12 @@ function App() {
 
             // 시트 데이터 가공 (디자이너별로 레퍼런스 그룹화)
             rawData.forEach((row, index) => {
-              const designerName = row['디자이너명'] || row['Name'] || row['Designer'];
-              const url = row['인스타그램 링크'] || row['URL'] || row['Link'];
-              const reason = row['선정 이유'] || row['Reason'] || row['Comment'];
+              // 컬럼 인덱스로 접근 (A: 0, B: 1, C: 2)
+              const designerName = row[0]?.trim();
+              const url = row[1]?.trim();
+              const reason = row[2]?.trim();
 
-              if (designerName && url) {
+              if (designerName && url && url.startsWith('http')) {
                 if (!designerMap[designerName]) {
                   designerMap[designerName] = {
                     id: designerName,
@@ -50,7 +51,7 @@ function App() {
                   };
                 }
                 designerMap[designerName].references.push({
-                  id: index,
+                  id: `${designerName}-${index}`,
                   url,
                   reason: reason || '코멘트가 없습니다.'
                 });
