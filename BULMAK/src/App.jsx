@@ -84,17 +84,16 @@ function App() {
             const data = results.data.map((row, i) => {
               const dateVal = row['날짜'] || Object.values(row)[COLS.DATE];
               const comment = row['코멘트'] || Object.values(row)[COLS.COMMENT];
-              const link = row['제작 스크립트 예시'] || Object.values(row)[COLS.LINK];
+              const script = row['제작 스크립트 예시'] || Object.values(row)[COLS.LINK];
 
               return {
                 id: `item-${i}`,
                 dateInfo: parseDate(dateVal),
                 comment: comment?.trim() || '',
-                url: link?.trim() || ''
+                script: script?.trim() || ''
               };
-            }).filter(item => item.url || item.comment)
+            }).filter(item => item.script || item.comment)
               .sort((a, b) => {
-                // Sort by date info (descending)
                 const dateA = `${a.dateInfo.year}${a.dateInfo.month}`;
                 const dateB = `${b.dateInfo.year}${b.dateInfo.month}`;
                 return dateB.localeCompare(dateA);
@@ -121,6 +120,7 @@ function App() {
   const groupedItems = useMemo(() => {
     const filtered = items.filter(item => 
       item.comment.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      item.script.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.dateInfo.raw.includes(searchQuery)
     );
 
@@ -243,9 +243,9 @@ function App() {
                     </div>
                     
                     <div className="flex flex-col gap-3 mt-auto">
-                      {item.url && (
+                      {item.script && item.script.startsWith('http') ? (
                         <a 
-                          href={item.url} 
+                          href={item.script} 
                           target="_blank" 
                           rel="noopener noreferrer" 
                           className="btn btn-primary w-full shadow-lg shadow-indigo-500/30 group-hover:scale-[1.02] transition-transform"
@@ -253,7 +253,16 @@ function App() {
                           <ExternalLink size={18} />
                           레퍼런스 링크 열기
                         </a>
-                      )}
+                      ) : item.script ? (
+                        <button 
+                          onClick={() => setSelectedItem(item)}
+                          className="btn btn-primary w-full shadow-lg shadow-indigo-500/30 group-hover:scale-[1.02] transition-transform"
+                        >
+                          <FileText size={18} />
+                          제작 스크립트 예시 열기
+                        </button>
+                      ) : null}
+                      
                       <button 
                         onClick={() => setSelectedItem(item)}
                         className="btn btn-secondary w-full"
@@ -277,41 +286,59 @@ function App() {
       {/* Detail Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="glass max-w-2xl w-full p-8 rounded-[2rem] relative shadow-2xl animate-up">
+          <div className="glass max-w-2xl w-full p-8 rounded-[2rem] relative shadow-2xl animate-up overflow-hidden">
             <button 
               onClick={() => setSelectedItem(null)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white"
+              className="absolute top-6 right-6 text-slate-400 hover:text-white z-[210] p-2"
             >
               <LogOut size={24} className="rotate-90" />
             </button>
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="text-indigo-400" />
-              <h2 className="text-2xl font-bold">{selectedItem.dateInfo.raw} 기획안</h2>
+              <h2 className="text-2xl font-bold">{selectedItem.dateInfo.raw} 상세 정보</h2>
             </div>
-            <div className="bg-white/5 rounded-2xl p-6 mb-8 max-h-[400px] overflow-y-auto custom-scrollbar">
-              <h3 className="text-indigo-400 text-sm font-bold mb-4 uppercase tracking-widest flex items-center gap-2">
-                <MessageSquare size={14} />
-                제작 가이드 및 코멘트
-              </h3>
-              <p className="text-lg leading-relaxed whitespace-pre-wrap">
-                {selectedItem.comment}
-              </p>
-            </div>
-            <div className="flex gap-4">
-              {selectedItem.url && (
-                <a 
-                  href={selectedItem.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-primary flex-1 py-4"
-                >
-                  <ExternalLink size={18} />
-                  레퍼런스 바로가기
-                </a>
+            
+            <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 mb-8">
+              {selectedItem.comment && (
+                <div className="bg-white/5 rounded-2xl p-6">
+                  <h3 className="text-indigo-400 text-xs font-bold mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <MessageSquare size={14} />
+                    촬영 기획안 및 가이드
+                  </h3>
+                  <p className="text-lg leading-relaxed whitespace-pre-wrap">
+                    {selectedItem.comment}
+                  </p>
+                </div>
               )}
+              
+              {selectedItem.script && (
+                <div className="bg-indigo-500/5 rounded-2xl p-6 border border-indigo-500/10">
+                  <h3 className="text-indigo-400 text-sm font-bold mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <FileText size={14} />
+                    제작 스크립트 예시
+                  </h3>
+                  {selectedItem.script.startsWith('http') ? (
+                    <a 
+                      href={selectedItem.script} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-indigo-400 hover:underline break-all text-lg"
+                    >
+                      {selectedItem.script}
+                    </a>
+                  ) : (
+                    <p className="text-lg leading-relaxed whitespace-pre-wrap">
+                      {selectedItem.script}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-4">
               <button 
                 onClick={() => setSelectedItem(null)}
-                className="btn btn-secondary flex-1 py-4"
+                className="btn btn-secondary flex-1 py-4 text-lg"
               >
                 닫기
               </button>
@@ -321,7 +348,7 @@ function App() {
       )}
 
       <footer className="py-10 text-center text-slate-600 text-xs tracking-widest font-bold">
-        &copy; 2026 BULMAK FRANCHISE HUB &bull; ALL RIGHTS RESERVED
+        &copy; 2026 스스로마케팅연구소 &bull; ALL RIGHTS RESERVED
       </footer>
     </div>
   );
