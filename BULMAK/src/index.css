@@ -233,33 +233,97 @@ h1, h2, h3 {
 }
 
 .btn-responsive.btn-primary {
-  background: #6366f1;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: white;
   box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-responsive.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: 0.5s;
+}
+
+.btn-responsive.btn-primary:hover::after {
+  left: 100%;
 }
 
 .btn-responsive.btn-secondary {
   background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #94a3b8;
 }
 
 .btn-responsive.btn-has-content {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #818cf8;
-  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2);
 }
 
 .btn-responsive:hover {
-  transform: translateY(-3px);
-  filter: brightness(1.2);
+  transform: translateY(-3px) scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.5);
 }
 
 .btn-responsive.btn-disabled {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #475569;
+  cursor: not-allowed;
+}
+
+/* Pagination Control */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 4rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-weight: 700;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.page-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.page-btn.active {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+  box-shadow: 0 8px 15px -5px rgba(99, 102, 241, 0.5);
+}
+
+.page-btn.disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
 

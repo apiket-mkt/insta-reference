@@ -29,8 +29,11 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('4'); // Default to 4
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('comment'); // 'comment' or 'script'
+  
+  const itemsPerPage = 10;
 
   // Authentication check
   useEffect(() => {
@@ -118,6 +121,17 @@ function App() {
     return items.filter(item => item.month === selectedMonth);
   }, [items, selectedMonth]);
 
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredItems.slice(start, start + itemsPerPage);
+  }, [filteredItems, currentPage]);
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
+    setCurrentPage(1); // Reset to page 1
+  };
+
   // Available months for navigation
   const availableMonths = [4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -182,7 +196,7 @@ function App() {
             {availableMonths.map(m => (
               <button 
                 key={m}
-                onClick={() => setSelectedMonth(m.toString())}
+                onClick={() => handleMonthChange(m.toString())}
                 className={`px-8 py-3 rounded-2xl text-base font-bold whitespace-nowrap transition-all flex-shrink-0 active:scale-95 ${
                   selectedMonth === m.toString() 
                     ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 translate-y-[-2px]' 
@@ -214,61 +228,95 @@ function App() {
               <div className="h-px flex-1 bg-gradient-to-r from-indigo-500/20 to-transparent" />
             </div>
             
-            <div className="flex flex-col gap-6">
-              {filteredItems.length > 0 ? (
-                filteredItems.map((item, i) => (
-                  <div 
-                    key={item.id} 
-                    className="glass p-8 rounded-[2rem] flex flex-col items-start gap-5 animate-up group hover:border-white/20 transition-all border border-white/5 shadow-xl"
-                  >
-                    {/* Date Row */}
-                    <div className="flex items-center gap-2 mb-1 px-4 py-1.5 bg-white/5 rounded-full">
-                      <Calendar size={15} className="text-indigo-400" />
-                      <span className="text-sm font-black text-slate-400 tracking-tighter">DATE: {item.displayDate}</span>
-                    </div>
+            <div className="flex flex-col gap-8">
+              {paginatedItems.length > 0 ? (
+                <>
+                  {paginatedItems.map((item, i) => (
+                    <div 
+                      key={item.id} 
+                      className="glass p-10 rounded-[2.5rem] flex flex-col items-center text-center gap-6 animate-up group hover:border-white/20 transition-all border border-white/5 shadow-2xl"
+                    >
+                      {/* Date Row */}
+                      <div className="flex items-center justify-center gap-2 mb-1 px-5 py-2 bg-white/5 rounded-full">
+                        <Calendar size={14} className="text-indigo-400" />
+                        <span className="text-xs font-black text-slate-400 tracking-wider">DATE: {item.displayDate}</span>
+                      </div>
 
-                    {/* Content Area */}
-                    <div className="w-full">
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-3 bg-indigo-500 rounded-full" />
-                          <span className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em]">추천사유</span>
+                      {/* Content Area */}
+                      <div className="w-full text-center">
+                        <div className="flex flex-col gap-4 items-center">
+                          <div className="flex items-center gap-2 justify-center">
+                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                            <span className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">추천사유</span>
+                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                          </div>
+                          <p className="text-2xl font-bold leading-relaxed group-hover:text-white transition-colors text-balance px-4">
+                            {item.comment || "작성된 사유가 없습니다."}
+                          </p>
                         </div>
-                        <p className="text-xl font-semibold leading-relaxed group-hover:text-white transition-colors text-balance">
-                          {item.comment || "작성된 사유가 없습니다."}
-                        </p>
+                      </div>
+
+                      {/* Actions Row */}
+                      <div className="grid grid-cols-2 gap-4 w-full pt-[30px] mt-2 border-t border-white/5">
+                        {item.link ? (
+                          <a 
+                            href={item.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="btn-responsive btn-primary h-[64px] !text-[14px] sm:!text-[16px] !px-2"
+                          >
+                            <ExternalLink size={18} />
+                            레퍼런스 컨텐츠보기
+                          </a>
+                        ) : (
+                          <button className="btn-responsive btn-disabled h-[64px] !text-[14px] sm:!text-[16px] !px-2" disabled>
+                            <AlertCircle size={18} />
+                            레퍼런스 링크없음
+                          </button>
+                        )}
+                        
+                        <button 
+                          onClick={() => { setSelectedItem(item); setActiveModalTab('script'); }}
+                          className={`btn-responsive h-[64px] !text-[14px] sm:!text-[16px] !px-2 ${item.script ? 'btn-has-content' : 'btn-secondary'}`}
+                        >
+                          <FileText size={18} />
+                          스크립트 예시보기
+                        </button>
                       </div>
                     </div>
+                  ))}
 
-                    {/* Actions Row */}
-                    <div className="grid grid-cols-2 gap-3 w-full pt-10 mt-2 border-t border-white/5">
-                      {item.link ? (
-                        <a 
-                          href={item.link} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="btn-responsive btn-primary h-[60px] !text-[13px] sm:!text-[16px] !px-2"
-                        >
-                          <ExternalLink size={16} />
-                          레퍼런스 컨텐츠보기
-                        </a>
-                      ) : (
-                        <button className="btn-responsive btn-disabled h-[60px] !text-[13px] sm:!text-[16px] !px-2" disabled>
-                          <AlertCircle size={16} />
-                          레퍼런스 링크없음
-                        </button>
-                      )}
-                      
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="pagination-container">
                       <button 
-                        onClick={() => { setSelectedItem(item); setActiveModalTab('script'); }}
-                        className={`btn-responsive h-[60px] !text-[13px] sm:!text-[16px] !px-2 ${item.script ? 'btn-has-content' : 'btn-secondary'}`}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={`page-btn ${currentPage === 1 ? 'disabled' : ''}`}
                       >
-                        <FileText size={16} />
-                        스크립트 예시보기
+                        <ChevronRight className="rotate-180" size={20} />
+                      </button>
+                      
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button 
+                          key={i} 
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`page-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+                      >
+                        <ChevronRight size={20} />
                       </button>
                     </div>
-                  </div>
-                ))
+                  )}
+                </>
               ) : (
                 <div className="py-32 text-center text-slate-500 border-2 border-dashed border-white/5 rounded-[3rem] animate-up shadow-inner">
                   <Camera className="mx-auto mb-6 opacity-10" size={64} />
