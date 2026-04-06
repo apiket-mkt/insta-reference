@@ -6,8 +6,9 @@ export const GLOBAL_PASSWORD = 'bulmak';
 
 // 컬럼 인덱스 정의
 export const COLS = {
-  DATE: 0,       // 날짜 (A)
-  LINK: 1,       // 인스타그램 레퍼런스 링크 (B)
-  COMMENT: 2,    // 코멘트/기획안 상세 (C)
-  SCRIPT: 3      // 제작 스크립트 예시 (D)
+  MONTH: 0,      // 월 (A)
+  DAY: 1,        // 일 (B)
+  LINK: 2,       // 인스타그램 레퍼런스 링크 (C)
+  COMMENT: 3,    // 코멘트/기획안 상세 (D)
+  SCRIPT: 4      // 제작 스크립트 예시 (E)
 };
